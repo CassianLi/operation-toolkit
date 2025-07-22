@@ -1,6 +1,6 @@
 ssh-keys:
   - account: login-user-1
-    pub-secret: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdfidtqIXFlWkVEMHu9KItjguSeCeeJ+vl3BChrey10/KDATxXL89Hbcd5rblH3epcBV9GhkjMMTGPOrUnUYX8uwNV6+XdsKSdGFNRsFJPRCIvn4DMZKMuPJ2boptXHt3bFdrxM5/tpXJegzTmBFpMVXvdfSkRqag0eNJvL6KBgQ3opqTC3JWN4s9N4AhFOKEdfEGZejyZUhC5t/o3miWPfHgdyzSV8GlZjRHWvmsHS0RnK09y5FlVkO2GBwuBWxqKGlwxMvQKfTb5el dfadfa@163.com'
+    pub-secret: 'ssh-rsa ...'
 
   - account: login-user-2
-    pub-secret: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdfidtqIXFlWkVEMHu9KItjguSeCeeJ+vl3BChrey10/KDATxXL89Hbcd5rblH3epcBV9GhkjMMTGPOrUnUYX8uwNV6+XdsKSdGFNRsFJPRCIvn4DMZKMuPJ2boptXHt3bFdrxM5/tpXJegzTmBFpMVXvdfSkRqag0eNJvL6KBgQ3opqTC3JWN4s9N4AhFOKEdfEGZejyZUhC5t/o3miWPfHgdyzSV8GlZjRHWvmsHS0RnK09y5FlVkO2GBwuBWxqKGlwxMvQKfTb5el dfadfa@163.com'
+    pub-secret: 'ssh-rsa ...'
