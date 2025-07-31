@@ -1,0 +1,17 @@
+FROM mysql:5.7
+
+USER root
+
+RUN yum -y install tar libaio perl-DBI perl-IO-Socket-SSL perl-Time-HiRes numactl && \
+    yum clean all
+
+COPY ../tools-package/percona-xtrabackup-24-2.4.28-1.el7.x86_64.rpm /tmp/
+COPY ../tools-package/qpress-11-linux-x64.tar /tmp/
+
+RUN rpm -ivh --nodeps --force /tmp/percona-xtrabackup-24-2.4.28-1.el7.x86_64.rpm && \
+    rm -f /tmp/percona-xtrabackup-24-2.4.28-1.el7.x86_64.rpm
+
+RUN tar -xvf /tmp/qpress-11-linux-x64.tar -C /tmp && \
+    chmod 775 /tmp/qpress && \
+    mv /tmp/qpress /usr/bin/ && \
+    rm -f /tmp/qpress-11-linux-x64.tar

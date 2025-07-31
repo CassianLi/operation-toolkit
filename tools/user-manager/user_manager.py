@@ -1511,6 +1511,32 @@ class UserManager:
 
         self.remove_user_permissions(username)
 
+    def main_menu(self):
+        while True:
+            self.print_header("用户权限管理主菜单")
+            print("1. 创建新用户")
+            print("2. 修改用户权限")
+            print("3. 查看用户权限")
+            print("4. 回收用户权限")
+            print("5. 用户组权限管理")
+            print("6. 退出")
+            choice = input("请选择操作 [1-6]: ").strip()
+            if choice == "1":
+                self.create_new_user_workflow()
+            elif choice == "2":
+                self.modify_user_workflow()
+            elif choice == "3":
+                self.view_user_permissions_workflow()
+            elif choice == "4":
+                self.remove_permissions_workflow()
+            elif choice == "5":
+                self.group_permission_management_menu()
+            elif choice == "6":
+                print("退出程序。")
+                break
+            else:
+                self.print_error("无效选择，请输入 1-6")
+
 
 def main():
     """主函数"""

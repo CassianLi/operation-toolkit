@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  mysql57:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql57
+    container_name: mysql57_sysafari
+    restart: unless-stopped
+    environment:
+      # 数据库基础配置
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_secure_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-sysafari}
+      MYSQL_USER: ${MYSQL_USER:-sysafari_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-your_secure_user_password}
+
+      # MySQL性能和安全配置
+      MYSQL_INNODB_BUFFER_POOL_SIZE: 1G
+      MYSQL_MAX_CONNECTIONS: 200
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      # 数据持久化
+      - /data/databases/mysql/data:/var/lib/mysql:Z
+      # 备份文件挂载
+      - /data/databases/mysql/backups:/backups
+      - /data/databases/mysql/restore:/data/databases/mysql/restore
+      # 配置文件挂载
+      - ./mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
+      # 初始化脚本
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+      # 时区设置 - 使用宿主机时区
+      - /etc/localtime:/etc/localtime:ro
+
+    networks:
+      - mysql_network
+
+    # 健康检查
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD:-your_secure_root_password}",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # 安全配置
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+      - /var/tmp:noexec,nosuid,size=100m
+
+networks:
+  mysql_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  mysql_data:
+    driver: local
