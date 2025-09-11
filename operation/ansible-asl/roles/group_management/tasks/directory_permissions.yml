@@ -1,0 +1,59 @@
+---
+# 目录权限管理任务 - 修复版本
+
+- name: 确保目录存在并设置权限
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ system_directories[item].owner | default('root') }}"
+    group: "{{ system_directories[item].group | default('developers') }}"
+    mode: "{{ system_directories[item].mode | default('0755') }}"
+  loop: "{{ system_directories.keys() }}"
+  when: system_directories is defined
+  register: directory_permissions_result
+  tags:
+    - directories
+    - permissions
+
+- name: 显示目录权限设置结果
+  debug:
+    msg: "目录 {{ item.item }} 权限设置: {{ '成功' if item.changed else '已存在' }}"
+  loop: "{{ directory_permissions_result.results | default([]) }}"
+  when: directory_permissions_result is defined
+  tags:
+    - directories
+    - permissions
+
+- name: 显示用户组目录权限信息
+  debug:
+    msg: "用户组 {{ item.0 }} 对目录 {{ item.1.path }} 的权限: {{ item.1.access }}"
+  loop: "{{ group_permissions | dict2items | subelements('value.directories') }}"
+  when: group_permissions is defined
+  tags:
+    - directories
+    - permissions
+
+- name: 为每个用户组设置目录ACL权限
+  acl:
+    path: "{{ item.1.path }}"
+    entity: "{{ item.0.key }}"
+    etype: group
+    permissions: "{{ 'rwx' if item.1.access == 'write' else 'rx' }}"
+    state: present
+  loop: "{{ group_permissions | dict2items | subelements('value.directories') }}"
+  when: group_permissions is defined
+  register: acl_permissions_result
+  tags:
+    - directories
+    - permissions
+    - acl
+
+- name: 显示ACL权限设置结果
+  debug:
+    msg: "用户组 {{ item.item.0 }} 对目录 {{ item.item.1.path }} ACL权限设置: {{ '成功' if item.changed else '已存在' }}"
+  loop: "{{ acl_permissions_result.results | default([]) }}"
+  when: acl_permissions_result is defined
+  tags:
+    - directories
+    - permissions
+    - acl

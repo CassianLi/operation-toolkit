@@ -1,0 +1,105 @@
+---
+# 用户组和用户配置playbook
+# 用于在指定环境服务器上配置用户组、用户和权限
+# 使用方法：
+# ansible-playbook playbooks/setup_users.yml -e "target_env=dev"  # 开发环境
+# ansible-playbook playbooks/setup_users.yml -e "target_env=pro"  # 生产环境
+# ansible-playbook playbooks/setup_users.yml  # 默认开发环境
+# ansible-playbook playbooks/setup_users.yml -e "target_env=dev" --limit "asl-dev-gw"  # 指定服务器
+
+- name: 配置用户组和用户
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../global_vars/users.yml
+    - ../global_vars/groups.yml
+    - ../global_vars/system.yml
+
+  pre_tasks:
+    - name: 显示目标环境信息
+      debug:
+        msg: |
+          目标环境: {{ target_env | default('dev') }}
+          服务器组: {{ target_env | default('dev') }}_servers
+          当前服务器: {{ server_name }} ({{ ansible_host }})
+
+          可用环境选项:
+          - dev: 开发环境 (dev_servers)
+          - pro: 生产环境 (pro_servers)
+
+    - name: 检查Python版本
+      command: python3 --version
+      register: python_version_result
+      failed_when: false
+      changed_when: false
+
+    - name: 解析Python版本号
+      set_fact:
+        current_python_version: "{{ python_version_result.stdout | regex_replace('Python (\\d+\\.\\d+).*', '\\1') }}"
+      when: python_version_result.rc == 0
+
+    - name: 显示当前Python版本
+      debug:
+        msg: "当前Python版本: {{ current_python_version | default('未安装') }}"
+
+    - name: 检查Python版本是否符合要求
+      fail:
+        msg: |
+          Python版本不符合要求！
+          当前版本: {{ current_python_version | default('未安装') }}
+          最低要求: 3.8
+
+          请先执行以下命令升级Python：
+          ansible-playbook playbooks/python_upgrade.yml
+      when:
+        - python_version_result.rc != 0 or current_python_version is not defined or (current_python_version is defined and current_python_version | float < 3.8)
+
+  roles:
+    - role: group_management
+      tags:
+        - group_management
+        - groups
+        - sudo
+        - all
+
+    - role: user_management
+      tags:
+        - user_management
+        - users
+        - ssh_keys
+        - all
+
+  post_tasks:
+    - name: 验证用户组创建
+      command: getent group {{ item.name }}
+      register: group_check
+      loop: "{{ user_groups }}"
+      changed_when: false
+
+    - name: 显示用户组验证结果
+      debug:
+        msg: "用户组 {{ item.item.name }} 创建成功"
+      loop: "{{ group_check.results }}"
+      when: item.rc == 0
+
+    - name: 验证用户创建
+      command: id {{ item.username }}
+      register: user_check
+      loop: "{{ users }}"
+      changed_when: false
+
+    - name: 显示用户验证结果
+      debug:
+        msg: "用户 {{ item.item.username }} 创建成功，主组: {{ item.item.primary_group }}"
+      loop: "{{ user_check.results }}"
+      when: item.rc == 0
+
+    - name: 显示配置完成信息
+      debug:
+        msg: |
+          配置完成！
+          服务器: {{ server_name }}
+          用户组: {{ user_groups | map(attribute='name') | list | join(', ') }}
+          用户: {{ users | map(attribute='username') | list | join(', ') }}

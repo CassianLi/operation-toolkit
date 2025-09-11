@@ -1,0 +1,49 @@
+---
+# 用户管理专用playbook
+# 使用方法：
+# ansible-playbook playbooks/manage_users.yml -e "target_env=dev"  # 开发环境
+# ansible-playbook playbooks/manage_users.yml -e "target_env=pro"  # 生产环境
+# ansible-playbook playbooks/manage_users.yml  # 默认开发环境
+
+- name: 管理用户账户和SSH密钥
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../global_vars/users.yml
+    - ../global_vars/system.yml
+
+  pre_tasks:
+    - name: 显示目标环境信息
+      debug:
+        msg: |
+          目标环境: {{ target_env | default('dev') }}
+          服务器组: {{ target_env | default('dev') }}_servers
+          当前服务器: {{ server_name }} ({{ ansible_host }})
+
+  roles:
+    - role: user_management
+      tags:
+        - user_management
+        - users
+        - ssh_keys
+
+  post_tasks:
+    - name: 验证用户创建
+      command: id {{ item.username }}
+      register: user_check
+      loop: "{{ users }}"
+      changed_when: false
+
+    - name: 显示用户验证结果
+      debug:
+        msg: "用户 {{ item.item.username }} 状态: {{ '存在' if item.rc == 0 else '不存在' }}"
+      loop: "{{ user_check.results }}"
+
+    - name: 显示配置完成信息
+      debug:
+        msg: |
+          用户管理完成！
+          服务器: {{ server_name }}
+          用户: {{ users | map(attribute='username') | list | join(', ') }}

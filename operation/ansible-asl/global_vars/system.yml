@@ -1,0 +1,73 @@
+---
+# 系统配置变量
+
+# Python版本要求
+min_python_version: 38
+
+# 服务器配置
+# server_config:
+#   timezone: "Asia/Shanghai"
+#   locale: "zh_CN.UTF-8"
+
+# 系统目录配置 - 合并了directory_defaults.yml的内容
+system_directories:
+  "/usr/local/src":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/opt":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/opt/java-apps":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/opt/python-apps":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/opt/go-apps":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/opt/docker-apps":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/var/log":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/etc":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/etc/nginx":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/etc/yum.repos.d":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/etc/docker":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/tmp":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/data":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/backup":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
+  "/mnt/static":
+    owner: "root"
+    group: "developers"
+    mode: "0755"
