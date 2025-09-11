@@ -3,3 +3,12 @@
 
 # test
 **test**
+
+
+# tar.gz
+*.tar.gz
+
+
+# log
+*.log
+
