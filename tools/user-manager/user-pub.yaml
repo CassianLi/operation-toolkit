@@ -1,6 +1,0 @@
-ssh-keys:
-  - account: login-user-1
-    pub-secret: 'ssh-rsa ...'
-
-  - account: login-user-2
-    pub-secret: 'ssh-rsa ...'
