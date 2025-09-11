@@ -1,0 +1,145 @@
+# 数据库清理规则配置
+# 定义需要清理的表和清理策略
+# 使用ID字段进行清理，避免日期字段无默认值的问题
+
+# 全局设置
+global:
+  # 批处理设置
+  batch_size: 1000
+  max_execution_time: 3600 # 秒，最大执行时间
+
+  # 执行控制
+  sleep_between_batches: 1 # 批处理间休眠时间（秒）
+  dry_run: false # 试运行模式，不实际删除数据
+
+  # 安全设置
+  max_rows_per_table: 10000000 # 单表最大处理行数
+  backup_before_cleanup: true # 清理前是否备份
+
+  # 监控设置
+  progress_report_interval: 100 # 每处理多少条记录报告一次进度
+  performance_monitor: true # 是否启用性能监控
+
+# 表配置列表
+# 使用ID字段进行清理，max_id为手动查询并配置的ID最大值
+# 将清理表中ID小于此max_id的所有数据
+tables:
+  # 仓库货物清单表，与tk表有大量字段冗余，且粒度最细，需要清理
+  - name: "base_warehouse_and_tk"
+    max_id: 3112544 # 手动查询并配置的ID最大值
+    # 批处理大小，用于计算清理时间
+    batch_size: 1000
+    # 预估行数，用于计算清理时间
+    estimated_rows: 1000000
+    enabled: true
+    description: "仓库货物清单表，与tk表有大量字段冗余，且粒度最细，需要清理"
+
+  # 报关单通信xml文件表(已弃用，可不清理)
+  # - name: "base_customs_xml"
+  #   max_id: 500000 # 手动查询并配置的ID最大值
+  #   batch_size: 500
+  #   estimated_rows: 500000
+  #   enabled: true
+  #   description: "报关通信xml文件表"
+
+  # 物流单信息表
+  - name: "base_reference_tracking"
+    max_id: 3558192 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "物流单信息表"
+
+  # 物流单物流状态表
+  - name: "base_tracking_logistics"
+    max_id: 3485868 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "物流单物流状态表"
+
+  # 物流信息表
+  - name: "base_track_logistics_info"
+    max_id: 19961405 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "物流信息表"
+
+  # 物流单其他业务绑定关系表（记录物流单与其他业务的关系）
+  - name: "service_tracking_bind"
+    max_id: 2954793 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "物流单其他业务绑定关系表"
+
+  # 提单资源表
+  - name: "service_bill_resource"
+    max_id: 9324409 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "提单资源表"
+
+  # 提单物流单绑定关系表
+  - name: "service_bill_tracking"
+    max_id: 3821313 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "提单物流单绑定关系表"
+
+    # 文件表
+  - name: "base_file"
+    max_id: 3223743 # 手动查询并配置的ID最大值
+    batch_size: 500
+    estimated_rows: 500000
+    enabled: true
+    description: "文件表"
+
+# 清理策略配置
+cleanup_strategy:
+  # 执行模式
+  # batch: 分批处理, single: 单次处理
+  mode: "batch"
+
+  # 时间窗口设置
+  time_window:
+    # 开始时间
+    start_hour: 2
+    # 结束时间
+    end_hour: 6
+    # 执行天数
+    days_of_week: [1, 2, 3, 4, 5, 6, 7]
+
+  # 错误处理
+  error_handling:
+    # 最大重试次数
+    max_retries: 3
+    # 重试间隔
+    retry_delay: 5
+    # 是否继续处理错误
+    continue_on_error: false
+
+  # 性能保护
+  performance_protection:
+    # 最大CPU使用率
+    max_cpu_usage: 80
+    # 最大内存使用率
+    max_memory_usage: 70
+    # 最大IO等待时间（毫秒）
+    max_io_wait: 20
+
+  # 监控告警
+  monitoring:
+    # 是否启用告警
+    enable_alerts: true
+    # 告警阈值
+    alert_thresholds:
+      # 错误率阈值
+      error_rate: 0.05
+      # 慢查询时间阈值（秒）
+      slow_query_time: 10
+      # 连接超时阈值（秒）
+      connection_timeout: 30
