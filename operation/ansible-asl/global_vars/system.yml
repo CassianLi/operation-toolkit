@@ -18,35 +18,31 @@ system_directories:
   "/opt":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0764"
   "/opt/java-apps":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/opt/python-apps":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/opt/go-apps":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/opt/docker-apps":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/var/log":
     owner: "root"
     group: "developers"
-    mode: "0755"
-  "/etc":
-    owner: "root"
-    group: "root"
-    mode: "0755"
+    mode: "0775"
   "/etc/nginx":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/etc/yum.repos.d":
     owner: "root"
     group: "root"
@@ -58,16 +54,16 @@ system_directories:
   "/tmp":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/data":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/backup":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"
   "/mnt/static":
     owner: "root"
     group: "developers"
-    mode: "0755"
+    mode: "0775"

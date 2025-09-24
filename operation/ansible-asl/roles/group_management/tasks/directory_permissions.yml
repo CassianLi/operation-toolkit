@@ -38,11 +38,12 @@
     path: "{{ item.1.path }}"
     entity: "{{ item.0.key }}"
     etype: group
-    permissions: "{{ 'rwx' if item.1.access == 'write' else 'rx' }}"
+    permissions: "{{ item.1.access }}"
     state: present
   loop: "{{ group_permissions | dict2items | subelements('value.directories') }}"
   when: group_permissions is defined
   register: acl_permissions_result
+  ignore_errors: yes # 有目录不存在或者权限不足，设置ACL权限失败，忽略错误
   tags:
     - directories
     - permissions
@@ -57,3 +58,31 @@
     - directories
     - permissions
     - acl
+
+- name: 修复 /etc 目录权限（紧急恢复）
+  file:
+    path: "/etc"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  tags:
+    - emergency_fix
+    - etc_permissions
+
+- name: 确保关键系统文件有正确的权限
+  file:
+    path: "{{ item }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  loop:
+    - "/etc/profile"
+    - "/etc/bashrc"
+    - "/etc/environment"
+    - "/etc/passwd"
+    - "/etc/group"
+    - "/etc/shadow"
+  tags:
+    - system_files
+    - permissions
+    - emergency_fix

@@ -32,6 +32,9 @@
         - group_management
         - groups
         - sudo
+        - directories
+        - permissions
+        - emergency_fix
 
   post_tasks:
     - name: 验证用户组创建
