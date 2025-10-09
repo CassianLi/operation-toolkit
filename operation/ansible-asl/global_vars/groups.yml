@@ -40,10 +40,6 @@ group_permissions:
       - path: "/var/log"
         name: "系统日志目录"
         access: "rw"
-      # - path: "/etc"
-      #   name: "系统配置目录"
-      #   access: "r"
-      # 注释掉 /etc 目录权限，避免影响系统登录
       - path: "/etc/nginx"
         name: "Nginx配置目录"
         access: "rw"
@@ -55,15 +51,19 @@ group_permissions:
         access: "rw"
       - path: "/tmp"
         name: "临时目录"
-        access: "rw"
+        access: "rwx"
       - path: "/data"
         name: "数据目录"
-        access: "rw"
+        access: "rwx"
       - path: "/backup"
         name: "备份目录"
-        access: "rw"
+        access: "rwx"
       - path: "/var/lib/docker"
         name: "Docker数据目录"
+        access: "rw"
+      # 运行目录，用于java pid文件
+      - path: "/var/run"
+        name: "运行目录"
         access: "rw"
     sudo_commands:
       - "/bin/systemctl"
@@ -96,6 +96,8 @@ group_permissions:
       - "/usr/bin/rsync"
       - "/usr/bin/git"
       - "/usr/bin/crontab"
+      - "/usr/bin/chown"
+      - "/usr/bin/chmod"
 
   operations:
     name: "运维人员"
@@ -110,10 +112,6 @@ group_permissions:
       - path: "/var/log"
         name: "系统日志目录"
         access: "rwx"
-      # - path: "/etc"
-      #   name: "系统配置目录"
-      #   access: "r"
-      # 注释掉 /etc 目录权限，避免影响系统登录
       - path: "/etc/yum.repos.d"
         name: "YUM源配置目录"
         access: "rw"
@@ -129,6 +127,10 @@ group_permissions:
       - path: "/backup"
         name: "备份目录"
         access: "rwx"
+      # 运行目录，用于java pid文件
+      - path: "/var/run"
+        name: "运行目录"
+        access: "rw"
     sudo_commands:
       - "/bin/systemctl"
       - "/usr/bin/service"
@@ -170,6 +172,8 @@ group_permissions:
       - "/usr/bin/nano"
       - "/usr/bin/rsync"
       - "/usr/bin/git"
+      - "/usr/bin/chown"
+      - "/usr/bin/chmod"
 
   readonly:
     name: "只读用户"
@@ -178,10 +182,6 @@ group_permissions:
       - path: "/var/log"
         name: "系统日志目录"
         access: "r"
-      # - path: "/etc"
-      #   name: "系统配置目录"
-      #   access: "r"
-      # 注释掉 /etc 目录权限，避免影响系统登录
       - path: "/usr/local/src"
         name: "源码目录"
         access: "r"

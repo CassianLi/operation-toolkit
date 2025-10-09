@@ -1,0 +1,117 @@
+# MySQL 服务 Docker Compose 配置
+# 使用通用权限管理方案，将容器内用户映射到宿主机用户组
+
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-server
+    restart: unless-stopped
+
+    # 关键配置：用户映射到宿主机用户组
+    # 这将MySQL容器内用户映射到宿主机用户组，解决权限问题
+    user: "${HOST_USER_ID}:${HOST_GROUP_ID}"
+
+    # 环境变量配置
+    environment:
+      # 传递用户信息到容器内
+      - USER_ID=${HOST_USER_ID}
+      - GROUP_ID=${HOST_GROUP_ID}
+      - USER_NAME=${HOST_USER_NAME}
+      - GROUP_NAME=${HOST_GROUP_NAME}
+
+      # MySQL 特定配置
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-secure_root_password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-app_db}
+      - MYSQL_USER=${MYSQL_USER:-app_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-secure_user_password}
+      - MYSQL_CHARSET=${MYSQL_CHARSET:-utf8mb4}
+      - MYSQL_COLLATION=${MYSQL_COLLATION:-utf8mb4_unicode_ci}
+
+      # 系统配置
+      - TZ=${TZ:-Asia/Shanghai}
+
+    # 端口映射
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+
+    # 卷挂载配置 - 使用宿主机用户组权限
+    volumes:
+      # 数据目录 - 持久化存储
+      - ./data:/var/lib/mysql:rw
+      # 日志目录 - 日志文件存储
+      - ./logs:/var/log/mysql:rw
+      # 配置目录 - 自定义配置
+      - ./config:/etc/mysql/conf.d:ro
+      # 备份目录 - 数据备份
+      - ./backups:/backups:rw
+      # 初始化脚本目录
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+
+    # 网络配置
+    networks:
+      - mysql-network
+
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # MySQL 管理工具 (可选)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: mysql-admin
+    restart: unless-stopped
+
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${MYSQL_USER:-app_user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-secure_user_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secure_root_password}
+
+    ports:
+      - "${PHPMYADMIN_PORT:-8080}:80"
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - mysql-network
+
+# 网络配置
+networks:
+  mysql-network:
+    driver: bridge
+    name: mysql-network
+
+# 卷配置 (可选 - 使用命名卷)
+volumes:
+  mysql-data:
+    driver: local
+    name: mysql-data
+  mysql-logs:
+    driver: local
+    name: mysql-logs

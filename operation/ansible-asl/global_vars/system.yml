@@ -9,8 +9,10 @@ min_python_version: 38
 #   timezone: "Asia/Shanghai"
 #   locale: "zh_CN.UTF-8"
 
-# 系统目录配置 - 合并了directory_defaults.yml的内容
-system_directories:
+# 应用目录配置 - 仅包含应用相关的目录
+# 注意：系统原生目录（如 /var/log, /etc/*, /tmp 等）的权限配置
+# 应该在 groups.yml 中的 group_permissions 部分进行设置
+app_directories:
   "/usr/local/src":
     owner: "root"
     group: "developers"
@@ -32,26 +34,6 @@ system_directories:
     group: "developers"
     mode: "0775"
   "/opt/docker-apps":
-    owner: "root"
-    group: "developers"
-    mode: "0775"
-  "/var/log":
-    owner: "root"
-    group: "developers"
-    mode: "0775"
-  "/etc/nginx":
-    owner: "root"
-    group: "developers"
-    mode: "0775"
-  "/etc/yum.repos.d":
-    owner: "root"
-    group: "root"
-    mode: "0755"
-  "/etc/docker":
-    owner: "root"
-    group: "developers"
-    mode: "0755"
-  "/tmp":
     owner: "root"
     group: "developers"
     mode: "0775"

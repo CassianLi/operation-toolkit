@@ -1,0 +1,180 @@
+---
+# Root权限用户配置playbook
+# 用于在指定环境服务器上配置具有root权限的用户账户
+# 使用方法：
+# ansible-playbook playbooks/setup_root_users.yml -e "target_env=dev"  # 开发环境
+# ansible-playbook playbooks/setup_root_users.yml -e "target_env=pro"  # 生产环境
+# ansible-playbook playbooks/setup_root_users.yml  # 默认开发环境
+# ansible-playbook playbooks/setup_root_users.yml -e "target_env=dev" --limit "asl-dev-ser"  # 指定服务器
+
+- name: 配置Root权限用户
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../global_vars/root_users.yml
+    - ../global_vars/system.yml
+
+  pre_tasks:
+    - name: 显示目标环境信息
+      debug:
+        msg: |
+          目标环境: {{ target_env | default('dev') }}
+          服务器组: {{ target_env | default('dev') }}_servers
+          当前服务器: {{ server_name }} ({{ ansible_host }})
+          环境描述: {{ server_description }}
+
+          可用环境选项:
+          - dev: 开发环境 (dev_servers)
+          - pro: 生产环境 (pro_servers)
+          - test: 测试环境 (test_servers)
+
+    - name: 检查Python版本
+      command: python3 --version
+      register: python_version_result
+      failed_when: false
+      changed_when: false
+
+    - name: 解析Python版本号
+      set_fact:
+        current_python_version: "{{ python_version_result.stdout | regex_replace('Python (\\d+\\.\\d+).*', '\\1') }}"
+      when: python_version_result.rc == 0
+
+    - name: 显示当前Python版本
+      debug:
+        msg: "当前Python版本: {{ current_python_version | default('未安装') }}"
+
+    - name: 检查Python版本是否符合要求
+      fail:
+        msg: |
+          Python版本不符合要求！
+          当前版本: {{ current_python_version | default('未安装') }}
+          最低要求: {{ system_info.python_min_version }}
+
+          请先安装Python3或升级到符合要求的版本。
+      when:
+        - python_version_result.rc != 0 or current_python_version is not defined or (current_python_version is defined and current_python_version | float < system_info.python_min_version | float)
+
+    - name: 检查系统信息
+      debug:
+        msg: |
+          系统信息:
+          操作系统: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          内核版本: {{ ansible_kernel }}
+          架构: {{ ansible_architecture }}
+          主机名: {{ ansible_hostname }}
+
+    - name: 检查SSH服务状态
+      service:
+        name: sshd
+      register: sshd_status
+      failed_when: false
+
+    - name: 显示SSH服务状态
+      debug:
+        msg: "SSH服务状态: {{ '运行中' if sshd_status.status.ActiveState == 'active' else '未运行' }}"
+
+    - name: 检查sudo配置
+      command: sudo -l
+      register: sudo_check
+      failed_when: false
+      changed_when: false
+
+    - name: 显示sudo配置检查结果
+      debug:
+        msg: "sudo配置检查: {{ '正常' if sudo_check.rc == 0 else '异常' }}"
+
+  roles:
+    - role: root_user_management
+      tags:
+        - root_user_management
+        - root_users
+        - sudo_config
+        - ssh_keys
+        - all
+
+  post_tasks:
+    - name: 验证用户创建
+      command: id {{ item.username }}
+      register: user_check
+      loop: "{{ root_users }}"
+      changed_when: false
+
+    - name: 显示用户验证结果
+      debug:
+        msg: "用户 {{ item.item.username }} 创建成功，用户ID: {{ item.stdout_lines[0] }}"
+      loop: "{{ user_check.results }}"
+      when: item.rc == 0
+
+    - name: 验证sudo权限
+      command: sudo -l -U {{ item.username }}
+      register: sudo_check
+      loop: "{{ root_users }}"
+      changed_when: false
+      become_user: "{{ item.username }}"
+
+    - name: 显示sudo权限验证结果
+      debug:
+        msg: "用户 {{ item.item.username }} sudo权限: {{ '已配置' if 'NOPASSWD: ALL' in item.stdout else '未配置' }}"
+      loop: "{{ sudo_check.results }}"
+
+    - name: 验证SSH密钥配置
+      stat:
+        path: "/home/{{ item.username }}/.ssh/authorized_keys"
+      register: ssh_key_check
+      loop: "{{ root_users }}"
+
+    - name: 显示SSH密钥验证结果
+      debug:
+        msg: "用户 {{ item.item.username }} SSH密钥: {{ '已配置' if item.stat.exists else '未配置' }}"
+      loop: "{{ ssh_key_check.results }}"
+
+    - name: 测试SSH连接（可选）
+      wait_for:
+        port: 22
+        host: "{{ ansible_host }}"
+        timeout: 10
+      when: test_ssh_connection | default(false)
+      tags:
+        - test
+
+    - name: 显示配置完成信息
+      debug:
+        msg: |
+          ========================================
+          Root权限用户配置完成！
+          ========================================
+          服务器: {{ server_name }} ({{ ansible_host }})
+          环境: {{ target_env | default('dev') }}
+          配置时间: {{ ansible_date_time.iso8601 }}
+
+          配置用户:
+          {% for user in root_users %}
+          - {{ user.username }} ({{ user.full_name }})
+          {% endfor %}
+
+          安全提醒:
+          1. 请确保SSH密钥安全存储
+          2. 定期审计用户操作日志
+          3. 建议定期轮换SSH密钥
+          4. 监控sudo操作日志: /var/log/secure
+          5. 配置文件备份位置: /etc/sudoers.d/
+
+          验证命令:
+          - 检查用户: id {{ root_users[0].username }}
+          - 检查sudo权限: sudo -l -U {{ root_users[0].username }}
+          - 检查SSH密钥: ls -la /home/{{ root_users[0].username }}/.ssh/
+          ========================================
+
+    - name: 记录配置日志
+      lineinfile:
+        path: /var/log/ansible-root-users/playbook-execution.log
+        line: "{{ ansible_date_time.iso8601 }} - Root users configured on {{ inventory_hostname }} ({{ ansible_host }}) - Users: {{ root_users | map(attribute='username') | list | join(', ') }}"
+        create: yes
+        owner: root
+        group: root
+        mode: "0644"
+      tags:
+        - logging
+        - audit

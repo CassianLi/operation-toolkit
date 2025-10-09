@@ -1,0 +1,134 @@
+---
+# 系统配置变量
+# 包含系统级别的配置参数
+
+# 系统信息
+system_info:
+  os_family: "RedHat"
+  os_version: "7"
+  python_min_version: "3.8"
+
+# 目录配置
+directories:
+  # sudo配置目录
+  sudo_config_dir: "/etc/sudoers.d"
+
+  # 日志目录
+  log_dir: "/var/log"
+  ansible_log_dir: "/var/log/ansible"
+
+  # 临时目录
+  temp_dir: "/tmp"
+
+# 文件权限配置
+file_permissions:
+  # SSH目录权限
+  ssh_home_dir: "0700"
+  ssh_authorized_keys: "0600"
+  ssh_private_key: "0600"
+  ssh_public_key: "0644"
+
+  # sudo配置文件权限
+  sudo_config_file: "0440"
+
+  # 日志文件权限
+  log_file: "0644"
+
+# 系统服务配置
+services:
+  # SSH服务
+  ssh_service:
+    name: "sshd"
+    enabled: true
+    state: "started"
+
+  # sudo服务（通常不需要单独管理）
+  sudo_service:
+    name: "sudo"
+    enabled: true
+    state: "started"
+
+# 软件包配置
+packages:
+  # 必需软件包
+  required_packages:
+    - "openssh-server"
+    - "sudo"
+    - "python3"
+    - "python3-pip"
+    - "vim"
+    - "curl"
+    - "wget"
+    - "git"
+
+  # 可选软件包
+  optional_packages:
+    - "htop"
+    - "tree"
+    - "jq"
+    - "unzip"
+
+# 网络配置
+network:
+  # SSH端口
+  ssh_port: 22
+
+# 日志配置
+logging:
+  # 系统日志
+  system_log:
+    level: "info"
+    max_size: "100M"
+    max_files: 5
+
+  # SSH日志
+  ssh_log:
+    level: "info"
+    log_auth: true
+    log_facility: "AUTH"
+
+  # sudo日志
+  sudo_log:
+    enabled: true
+    log_file: "/var/log/sudo.log"
+    log_format: "%h %u %t %{command}s %{runas_user}s"
+
+# 安全配置
+security:
+  # 审计配置
+  audit:
+    enabled: true
+    rules:
+      - "-w /etc/sudoers -p wa -k sudoers"
+      - "-w /etc/sudoers.d/ -p wa -k sudoers"
+      - "-w /etc/ssh/sshd_config -p wa -k sshd_config"
+
+# 环境变量
+environment:
+  # 默认环境变量
+  default_vars:
+    EDITOR: "vim"
+    PAGER: "less"
+    HISTSIZE: "10000"
+    HISTFILESIZE: "10000"
+
+  # PATH配置
+  path_additions:
+    - "/usr/local/bin"
+    - "/usr/local/sbin"
+    - "/opt/bin"
+    - "/opt/sbin"
+
+# 备份配置
+backup:
+  # 配置文件备份
+  config_backup:
+    enabled: true
+    backup_dir: "/opt/backups/ansible-config"
+    retention_days: 30
+
+  # 用户数据备份
+  user_backup:
+    enabled: true
+    backup_dir: "/opt/backups/user-data"
+    retention_days: 7

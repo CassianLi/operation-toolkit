@@ -12,3 +12,12 @@
 # log
 *.log
 
+# users 配置文件
+root_users.yml
+
+# groups 配置文件
+*groups.yml
+
+# ssh_keys 配置文件
+*ssh_keys.yml
+

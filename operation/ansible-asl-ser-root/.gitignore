@@ -1,0 +1,69 @@
+# Ansible Root权限用户管理工具 - .gitignore
+
+# 敏感配置文件（包含SSH密钥等敏感信息）
+global_vars/ssh_keys.yml
+
+# Ansible日志文件
+logs/
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# 备份文件
+*.bak
+*.backup
+*.orig
+
+# Python缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# IDE配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 密钥文件
+*.pem
+*.key
+*.crt
+*.csr
+
+# 密码文件
+*.passwd
+*.password
+
+# 配置文件备份
+*.conf.bak
+*.cfg.bak
+
+# 测试文件
+test_*
+*_test.yml
+*_test.yaml
+
+# 文档生成文件
+docs/_build/
+site/
