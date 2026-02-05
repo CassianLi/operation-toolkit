@@ -31,7 +31,7 @@
           - test: 测试环境 (test_servers)
 
     - name: 检查Python版本
-      command: python3 --version
+      command: "{{ ansible_python_interpreter }} --version"
       register: python_version_result
       failed_when: false
       changed_when: false
@@ -53,8 +53,10 @@
           最低要求: {{ system_info.python_min_version }}
 
           请先安装Python3或升级到符合要求的版本。
-      when:
-        - python_version_result.rc != 0 or current_python_version is not defined or (current_python_version is defined and current_python_version | float < system_info.python_min_version | float)
+      when: >-
+        python_version_result.rc != 0
+        or current_python_version is not defined
+        or (current_python_version is defined and current_python_version is version(system_info.python_min_version, '<'))
 
     - name: 检查系统信息
       debug:

@@ -7,6 +7,7 @@
 - **Root权限用户管理**: 创建具有root权限的用户账户
 - **SSH密钥管理**: 自动配置SSH公钥认证
 - **sudo权限配置**: 配置无密码sudo权限
+- **用户清理功能**: 支持完全删除或仅清理SSH密钥
 - **安全配置**: 强化SSH安全设置
 - **多环境支持**: 支持开发、测试、生产环境
 - **审计日志**: 记录所有配置操作
@@ -24,13 +25,17 @@ ansible-asl-ser-root/
 │   ├── ssh_keys.yml.example      # SSH密钥配置模板
 │   └── ssh_keys.yml              # SSH密钥配置（敏感信息）
 ├── roles/
-│   └── root_user_management/     # Root用户管理角色
-│       ├── tasks/main.yml        # 主任务文件
-│       ├── templates/sudoers.j2  # sudo配置模板
-│       ├── handlers/main.yml     # 处理器文件
+│   ├── root_user_management/     # Root用户管理角色
+│   │   ├── tasks/main.yml        # 主任务文件
+│   │   ├── templates/sudoers.j2  # sudo配置模板
+│   │   ├── handlers/main.yml     # 处理器文件
+│   │   └── meta/main.yml         # 角色元数据
+│   └── root_user_cleanup/        # Root用户清理角色
+│       ├── tasks/main.yml        # 清理任务文件
 │       └── meta/main.yml         # 角色元数据
 ├── playbooks/
-│   └── setup_root_users.yml      # 主配置playbook
+│   ├── setup_root_users.yml      # 主配置playbook
+│   └── cleanup_root_users.yml    # 用户清理playbook
 ├── logs/                         # 日志目录
 └── README.md                     # 项目说明
 ```
@@ -118,6 +123,19 @@ ansible-playbook playbooks/setup_root_users.yml -e "target_env=pro"
 ansible-playbook playbooks/setup_root_users.yml -e "target_env=dev" --limit "asl-dev-ser"
 ```
 
+### 7. 清理用户账户
+
+```bash
+# 仅清理SSH密钥（保留用户账户）
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=ssh_only" -e "target_users=user1,user2"
+
+# 完全删除用户账户
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=full" -e "target_users=user1,user2"
+
+# 指定服务器清理
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=ssh_only" -e "target_users=user1" --limit "asl-dev-ser"
+```
+
 ## 📋 配置说明
 
 ### Root权限用户配置
@@ -167,6 +185,34 @@ Root权限用户将获得以下权限：
 - **SSH密钥认证**: 强制使用SSH密钥，禁用密码登录
 - **安全配置**: 强化SSH安全设置
 
+### 清理配置
+
+在 `global_vars/cleanup_users.yml` 中配置清理参数：
+
+```yaml
+# 清理模式配置
+cleanup_mode: "ssh_only"  # ssh_only 或 full
+
+# 目标用户列表（可选）
+# target_users: "user1,user2,user3"
+
+# 清理选项
+cleanup_options:
+  backup_user_data: false
+  backup_directory: "/var/backups/ansible-root-users"
+  force_cleanup: false
+  send_notification: false
+  notification_emails: []
+  restart_services: false
+
+# 安全配置
+security:
+  pre_cleanup_verification: true
+  post_cleanup_verification: true
+  detailed_logging: true
+  audit_cleanup: true
+```
+
 ### 系统配置
 
 在 `global_vars/system.yml` 中配置系统参数：
@@ -214,6 +260,22 @@ ansible-playbook playbooks/setup_root_users.yml --tags ssh_keys
 ansible-playbook playbooks/setup_root_users.yml --tags sudo_config
 ```
 
+### 清理命令
+
+```bash
+# 仅清理SSH密钥（推荐）
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=ssh_only" -e "target_users=user1,user2"
+
+# 完全删除用户账户
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=full" -e "target_users=user1,user2"
+
+# 使用配置文件清理
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev"
+
+# 清理特定服务器上的用户
+ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=ssh_only" -e "target_users=user1" --limit "asl-dev-ser"
+```
+
 ### 其他命令
 
 ```bash
@@ -228,6 +290,9 @@ ansible all -m shell -a "id {{ item }}" --loop "{{ root_users | map(attribute='u
 
 # 检查sudo权限
 ansible all -m shell -a "sudo -l -U {{ item }}" --loop "{{ root_users | map(attribute='username') | list }}"
+
+# 检查SSH密钥配置
+ansible all -m shell -a "ls -la /home/{{ item }}/.ssh/" --loop "{{ root_users | map(attribute='username') | list }}"
 ```
 
 ## 🔒 安全特性
@@ -239,6 +304,7 @@ ansible all -m shell -a "sudo -l -U {{ item }}" --loop "{{ root_users | map(attr
 - **最小权限原则**: 虽然给予root权限，但通过sudo实现
 - **审计日志**: 记录所有配置操作和用户活动
 - **敏感信息分离**: SSH密钥等敏感信息从版本控制中分离
+- **安全清理**: 支持安全的用户清理，可选择保留账户仅清理SSH密钥
 
 ### 安全配置说明
 
@@ -264,6 +330,9 @@ ansible all -m shell -a "sudo -l -U {{ item }}" --loop "{{ root_users | map(attr
    - 监控sudo操作日志
    - 定期审计用户活动
    - 备份配置文件
+   - 清理操作前确认用户身份
+   - 优先使用ssh_only模式清理SSH密钥
+   - 完全删除前备份重要数据
 
 ## 🔧 高级配置
 
@@ -313,6 +382,23 @@ security:
       - "http"  # 添加HTTP服务
 ```
 
+#### 清理用户配置
+
+在 `global_vars/cleanup_users.yml` 中配置：
+
+```yaml
+# 仅清理SSH密钥（推荐）
+cleanup_mode: "ssh_only"
+target_users: "old_user1,old_user2"
+
+# 完全删除用户账户
+cleanup_mode: "full"
+target_users: "temp_user1,temp_user2"
+cleanup_options:
+  backup_user_data: true
+  backup_directory: "/var/backups/user-cleanup-{{ ansible_date_time.date }}"
+```
+
 ### 故障排除
 
 #### 常见问题
@@ -344,12 +430,29 @@ security:
    ansible all -m shell -a "getent group admin_user1"
    ```
 
+4. **清理操作失败**：
+   ```bash
+   # 检查用户是否存在
+   ansible all -m shell -a "id target_user"
+
+   # 检查SSH密钥文件
+   ansible all -m shell -a "ls -la /home/target_user/.ssh/"
+
+   # 检查sudo配置
+   ansible all -m shell -a "ls -la /etc/sudoers.d/target_user"
+
+   # 检查清理日志
+   ansible all -m shell -a "tail -f /var/log/ansible-root-users/cleanup-execution.log"
+   ```
+
 #### 调试方法
 
 1. **使用verbose模式**：
    ```bash
    ansible-playbook playbooks/setup_root_users.yml -v
    ansible-playbook playbooks/setup_root_users.yml -vvv
+   ansible-playbook playbooks/cleanup_root_users.yml -v
+   ansible-playbook playbooks/cleanup_root_users.yml -vvv
    ```
 
 2. **检查日志**：
@@ -359,6 +462,11 @@ security:
 
    # 查看系统日志
    tail -f /var/log/secure
+
+   # 查看清理日志
+   tail -f /var/log/ansible-root-users/cleanup-execution.log
+   tail -f /var/log/ansible-root-users/ssh-cleanup.log
+   tail -f /var/log/ansible-root-users/user-deletion.log
    ```
 
 3. **验证配置**：
@@ -368,13 +476,15 @@ security:
 
    # 检查变量
    ansible all -m debug -a "var=root_users"
+   ansible all -m debug -a "var=cleanup_mode"
+   ansible all -m debug -a "var=target_user_list"
    ```
 
 ## 📊 项目特点
 
 ### 简化设计
-- **单一角色**: 只使用一个root_user_management角色
-- **核心功能**: 专注于root权限用户管理
+- **双角色设计**: root_user_management角色用于创建，root_user_cleanup角色用于清理
+- **核心功能**: 专注于root权限用户管理和清理
 - **清晰结构**: 简单的目录结构，易于理解
 
 ### 易于扩展
@@ -430,3 +540,6 @@ MIT License
 2. 定期审计用户操作
 3. 监控系统日志
 4. 定期轮换SSH密钥
+5. 清理操作前确认用户身份和权限
+6. 优先使用ssh_only模式进行SSH密钥清理
+7. 完全删除用户前备份重要数据
