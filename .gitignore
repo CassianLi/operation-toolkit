@@ -1,22 +1,41 @@
-/.DS_Store
+.DS_Store
 
-# test
-**test**
+# Local scratch (keep placeholders)
+tmp/*
+!tmp/**/.gitkeep
 
-
-# tar.gz
+# Archives / logs
 *.tar.gz
-
-
-# log
 *.log
 
-# users 配置文件
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Ansible local inventory & sensitive vars
+**/inventory/hosts.yml
+**/vars/users.yml
+**/vars/root_users.yml
+**/vars/ssh_keys.yml
+**/vars/groups.yml
+
+# Legacy filename patterns (pre-migration)
 root_users.yml
-
-# groups 配置文件
-*groups.yml
-
-# ssh_keys 配置文件
 *ssh_keys.yml
 
+# DB tool local config / runtime
+**/config/database.yaml
+apps/tools/**/backups/
+apps/tools/**/logs/
+
+# Python / IDE
+__pycache__/
+*.pyc
+.venv/
+.idea/
+.vscode/
+*.swp
+*~
