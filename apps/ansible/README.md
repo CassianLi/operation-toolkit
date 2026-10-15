@@ -20,9 +20,9 @@ cp vars/ssh_keys.yml.example vars/ssh_keys.yml
 
 ```bash
 make help
-make ping ENV=dev
-make users ENV=dev
-make root-users ENV=pro
+make ping TARGET_ENV=dev
+make users TARGET_ENV=dev
+make root-users TARGET_ENV=pro
 ```
 
 详情见 [docs/tech/ansible.md](../../docs/tech/ansible.md)。

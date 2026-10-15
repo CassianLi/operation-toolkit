@@ -6,10 +6,10 @@
 
 Inventory 主机组：
 
-- `dev_servers` — `ENV=dev`
-- `pro_servers` — `ENV=pro`
+- `dev_servers` — `TARGET_ENV=dev`
+- `pro_servers` — `TARGET_ENV=pro`
 
-Playbook 通过 `-e target_env=$ENV` 选择组（默认 `dev`）。
+Playbook 通过 `-e target_env=$TARGET_ENV` 选择组（默认 `dev`）。
 
 ## 常用 playbook
 

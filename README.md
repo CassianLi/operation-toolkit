@@ -18,9 +18,9 @@ ASL 服务器运维工具箱：Ansible 账户管理 + 周期数据库备份恢�
 
 ```bash
 make help
-make ping ENV=dev
-make users ENV=dev
-make root-users ENV=pro
+make ping TARGET_ENV=dev
+make users TARGET_ENV=dev
+make root-users TARGET_ENV=pro
 make db-remind
 make db-restore-docs
 ```
