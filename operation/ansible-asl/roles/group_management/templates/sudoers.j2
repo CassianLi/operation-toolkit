@@ -1,5 +1,0 @@
-# Sudo配置 - {{ group_permissions[item.name].name }}
-# 自动生成，请勿手动修改
-
-# {{ group_permissions[item.name].description }}
-%{{ item.name }} ALL=(ALL) NOPASSWD: {% for command in group_permissions[item.name].sudo_commands %}{{ command }}{% if not loop.last %}, {% endif %}{% endfor %}
