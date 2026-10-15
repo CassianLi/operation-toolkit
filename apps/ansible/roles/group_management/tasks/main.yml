@@ -1,0 +1,68 @@
+---
+# 用户组管理主任务文件
+
+- name: 检查现有用户组
+  command: getent group {{ item.name }}
+  register: existing_groups
+  loop: "{{ user_groups }}"
+  failed_when: false
+  changed_when: false
+  tags:
+    - groups
+
+- name: 创建用户组（忽略GID冲突）
+  group:
+    name: "{{ item.item.name }}"
+    state: present
+  loop: "{{ existing_groups.results }}"
+  when: item.rc != 0
+  ignore_errors: yes
+  register: group_creation_result
+  tags:
+    - groups
+
+- name: 显示用户组创建结果
+  debug:
+    msg: "用户组 {{ item.item.name }} 状态: {{ '已存在' if item.rc == 0 else '创建成功' }}"
+  loop: "{{ existing_groups.results }}"
+  tags:
+    - groups
+
+- name: 确保sudoers.d目录存在
+  file:
+    path: /etc/sudoers.d
+    state: directory
+    mode: "0750"
+    owner: root
+    group: root
+  tags:
+    - sudo
+
+- name: 配置用户组sudo权限
+  template:
+    src: sudoers.j2
+    dest: "/etc/sudoers.d/{{ item.name }}"
+    mode: "0440"
+    backup: yes
+    validate: "visudo -cf %s"
+  loop: "{{ user_groups }}"
+  when: group_permissions is defined
+  register: sudo_config_result
+  tags:
+    - sudo
+
+- name: 显示sudo配置结果
+  debug:
+    msg: "sudo配置文件 {{ item.item.name }} 配置状态: {{ '成功' if item.changed else '未更改' }}"
+  loop: "{{ sudo_config_result.results | default([]) }}"
+  when: sudo_config_result is defined
+  tags:
+    - sudo
+
+- name: 包含目录权限管理任务
+  include_tasks: directory_permissions.yml
+  when: group_permissions is defined
+  tags:
+    - directories
+    - permissions
+    - emergency_fix

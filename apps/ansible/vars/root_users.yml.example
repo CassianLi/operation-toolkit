@@ -1,0 +1,9 @@
+# Copy to root_users.yml (gitignored)
+root_users:
+- username: admin_example
+  full_name: Example Admin
+  shell: /bin/bash
+  home: /home/admin_example
+  create_home: true
+  ssh_keys:
+  - ssh-ed25519 AAAA...REPLACE_ME admin_example@example.local

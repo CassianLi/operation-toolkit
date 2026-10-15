@@ -1,0 +1,182 @@
+---
+# Root权限用户清理playbook
+# 用于清理指定环境服务器上的Root权限用户账户
+# 支持两种清理模式：
+# 1. 完全删除用户账户（包括用户、组、主目录、sudo配置等）
+# 2. 保留用户账户但清理SSH密钥（仅清理SSH密钥，保留其他配置）
+#
+# 使用方法：
+# ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=full" -e "target_users=user1,user2"  # 完全删除
+# ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=ssh_only" -e "target_users=user1,user2"  # 仅清理SSH密钥
+# ansible-playbook playbooks/cleanup_root_users.yml -e "target_env=dev" -e "cleanup_mode=full" -e "target_users=user1" --limit "asl-dev-ser"  # 指定服务器
+
+- name: 清理Root权限用户
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../vars/root_users.yml
+    - ../vars/system.yml
+    - ../vars/cleanup_users.yml
+
+  pre_tasks:
+    - name: 显示清理配置信息
+      debug:
+        msg: |
+          清理配置信息:
+          目标环境: {{ target_env | default('dev') }}
+          服务器组: {{ target_env | default('dev') }}_servers
+          当前服务器: {{ server_name }} ({{ ansible_host }})
+          环境描述: {{ server_description }}
+          清理模式: {{ cleanup_mode | default('ssh_only') }}
+          目标用户: {{ target_users | default('未指定') }}
+
+          清理模式说明:
+          - full: 完全删除用户账户（用户、组、主目录、sudo配置、SSH密钥）
+          - ssh_only: 仅清理SSH密钥，保留用户账户和其他配置
+
+    - name: 验证清理模式
+      fail:
+        msg: |
+          无效的清理模式: {{ cleanup_mode }}
+          支持的清理模式:
+          - full: 完全删除用户账户
+          - ssh_only: 仅清理SSH密钥
+      when: cleanup_mode is not defined or cleanup_mode not in ['full', 'ssh_only']
+
+    - name: 解析目标用户列表
+      set_fact:
+        target_user_list: "{{ target_users | default('') | split(',') | map('trim') | select('string') | list }}"
+      when: target_users is defined and target_users != ''
+
+    - name: 验证目标用户列表
+      fail:
+        msg: |
+          未指定要清理的用户！
+          请使用 -e "target_users=user1,user2" 指定要清理的用户
+          或编辑 vars/cleanup_users.yml 配置文件
+      when: target_user_list is not defined or target_user_list | length == 0
+
+    - name: 显示目标用户列表
+      debug:
+        msg: "将清理以下用户: {{ target_user_list | join(', ') }}"
+
+    - name: 检查目标用户是否存在
+      getent:
+        database: passwd
+        key: "{{ item }}"
+      register: user_existence_check
+      loop: "{{ target_user_list }}"
+      failed_when: false
+      changed_when: false
+
+    - name: 显示用户存在性检查结果
+      debug:
+        msg: "用户 {{ item.item }} 存在性检查: {{ '存在' if not item.failed else '不存在' }}"
+      loop: "{{ user_existence_check.results }}"
+
+    - name: 检查是否存在不存在的用户
+      fail:
+        msg: |
+          以下用户不存在，无法清理:
+          {% for result in user_existence_check.results %}
+          {% if result.failed %}
+          - {{ result.item }}
+          {% endif %}
+          {% endfor %}
+      when: user_existence_check.results | selectattr('failed') | list | length > 0
+
+  roles:
+    - role: root_user_cleanup
+      tags:
+        - root_user_cleanup
+        - cleanup_users
+        - cleanup_ssh_keys
+        - cleanup_sudo_config
+        - all
+
+  post_tasks:
+    - name: 验证清理结果
+      getent:
+        database: passwd
+        key: "{{ item }}"
+      register: cleanup_verification
+      loop: "{{ target_user_list }}"
+      failed_when: false
+      changed_when: false
+
+    - name: 显示清理验证结果
+      debug:
+        msg: "用户 {{ item.item }} 清理后状态: {{ '已删除' if item.failed else '仍存在' }}"
+      loop: "{{ cleanup_verification.results }}"
+      when: cleanup_mode == 'full'
+
+    - name: 验证SSH密钥清理结果
+      stat:
+        path: "/home/{{ item }}/.ssh/authorized_keys"
+      register: ssh_key_verification
+      loop: "{{ target_user_list }}"
+
+    - name: 显示SSH密钥清理验证结果
+      debug:
+        msg: "用户 {{ item.item }} SSH密钥清理后状态: {{ '已清理' if not item.stat.exists else '仍存在' }}"
+      loop: "{{ ssh_key_verification.results }}"
+
+    - name: 验证sudo配置清理结果
+      stat:
+        path: "/etc/sudoers.d/{{ item }}"
+      register: sudo_config_verification
+      loop: "{{ target_user_list }}"
+
+    - name: 显示sudo配置清理验证结果
+      debug:
+        msg: "用户 {{ item.item }} sudo配置清理后状态: {{ '已清理' if not item.stat.exists else '仍存在' }}"
+      loop: "{{ sudo_config_verification.results }}"
+      when: cleanup_mode == 'full'
+
+    - name: 显示清理完成信息
+      debug:
+        msg: |
+          ========================================
+          Root权限用户清理完成！
+          ========================================
+          服务器: {{ server_name }} ({{ ansible_host }})
+          环境: {{ target_env | default('dev') }}
+          清理模式: {{ cleanup_mode | default('ssh_only') }}
+          清理时间: {{ ansible_date_time.iso8601 }}
+
+          已清理用户:
+          {% for user in target_user_list %}
+          - {{ user }}
+          {% endfor %}
+
+          清理内容:
+          {% if cleanup_mode == 'full' %}
+          - 用户账户
+          - 用户组
+          - 主目录
+          - SSH密钥
+          - sudo配置
+          {% else %}
+          - SSH密钥（保留用户账户和其他配置）
+          {% endif %}
+
+          安全提醒:
+          1. 请确认清理操作符合安全策略
+          2. 建议备份重要数据
+          3. 定期审计清理操作日志
+          4. 监控系统日志: /var/log/secure
+          ========================================
+
+    - name: 记录清理日志
+      lineinfile:
+        path: /var/log/ansible-root-users/cleanup-execution.log
+        line: "{{ ansible_date_time.iso8601 }} - Root users cleanup on {{ inventory_hostname }} ({{ ansible_host }}) - Mode: {{ cleanup_mode | default('ssh_only') }} - Users: {{ target_user_list | join(', ') }}"
+        create: yes
+        owner: root
+        group: root
+        mode: "0644"
+      tags:
+        - logging
+        - audit

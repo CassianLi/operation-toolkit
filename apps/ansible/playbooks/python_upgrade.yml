@@ -1,0 +1,49 @@
+---
+# Python升级专用playbook
+# 使用方法：
+# ansible-playbook playbooks/python_upgrade_new.yml -e "target_env=dev"  # 开发环境
+# ansible-playbook playbooks/python_upgrade_new.yml -e "target_env=pro"  # 生产环境
+# ansible-playbook playbooks/python_upgrade_new.yml  # 默认开发环境
+
+- name: Python版本检查和升级
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: no # 临时禁用，避免Python版本兼容性问题
+
+  vars_files:
+    - ../vars/system.yml
+
+  tasks:
+    - name: 检查Python版本（使用raw模块， 切记不能使用--check模式测试包含raw模块的任务）
+      raw: python3 --version
+      register: python_version_result
+      failed_when: false
+      changed_when: false
+
+    - name: 解析Python版本号
+      set_fact:
+        current_python_version: "{{ python_version_result.stdout | regex_replace('Python (\\d+\\.\\d+).*', '\\1') }}"
+      when: python_version_result.rc == 0
+
+    - name: 显示当前Python版本
+      debug:
+        msg: "当前Python版本: {{ current_python_version | default('未安装') }}"
+
+    - name: 执行Python升级脚本（如果需要）
+      script: ../scripts/install_python38.sh
+      when:
+        - python_version_result.rc != 0 or current_python_version is not defined or (current_python_version is defined and current_python_version | float < 3.8)
+      become: yes
+
+    - name: 验证Python升级结果
+      raw: python3 --version
+      register: python_version_after_upgrade
+      when:
+        - python_version_result.rc != 0 or current_python_version is not defined or (current_python_version is defined and current_python_version | float < 3.8)
+      changed_when: false
+      failed_when: false
+
+    - name: 显示升级后的Python版本
+      debug:
+        msg: "升级后Python版本: {{ python_version_after_upgrade.stdout | default('升级失败') }}"
+      when: python_version_after_upgrade is defined and python_version_after_upgrade.rc is defined and python_version_after_upgrade.rc == 0

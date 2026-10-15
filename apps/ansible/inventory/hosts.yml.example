@@ -1,0 +1,87 @@
+# Example inventory — replace CHANGE_ME and *.example.local with local domains from /etc/hosts or LAN DNS.
+# Do not commit real hosts.yml.
+
+all:
+  children:
+    dev_servers:
+      hosts:
+        asl-dev-ser:
+          ansible_host: asl-dev-ser.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-dev-ser
+          server_description: 开发环境服务器
+          env_type: dev
+        asl-dev-gw:
+          ansible_host: asl-dev-gw.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-dev-gw
+          server_description: 开发环境网关服务器
+          env_type: dev
+        asl-dev-env:
+          ansible_host: asl-dev-env.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-dev-env
+          server_description: 开发环境服务器
+          env_type: dev
+    pro_servers:
+      hosts:
+        asl-pro-ser:
+          ansible_host: asl-pro-ser.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-pro-ser
+          server_description: 生产环境服务器
+          env_type: pro
+        asl-pro-gw:
+          ansible_host: asl-pro-gw.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-pro-gw
+          server_description: 生产环境网关服务器
+          env_type: pro
+        asl-pro-env:
+          ansible_host: asl-pro-env.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-pro-env
+          server_description: 生产环境服务器
+          env_type: pro
+        asl-pro-basic:
+          ansible_host: asl-pro-basic.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-pro-basic
+          server_description: 生产环境基础服务器
+          env_type: pro
+        asl-pro-bg:
+          ansible_host: asl-pro-bg.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-pro-bg
+          server_description: 生产环境后台服务器
+          env_type: pro
+        asl-pro-mq:
+          ansible_host: asl-pro-mq.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          server_name: asl-pro-mq
+          server_description: 生产环境消息队列服务器
+          env_type: pro
+        asl-pro-vault:
+          ansible_host: asl-pro-vault.example.local
+          ansible_user: CHANGE_ME
+          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+          ansible_python_interpreter: /usr/local/bin/python
+          server_name: asl-pro-vault
+          server_description: 生产环境Vault服务器(备份数据库，以及其他补充服务)
+          env_type: pro
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_ssh_common_args: -o StrictHostKeyChecking=no
+    ansible_connect_timeout: 30
+    ansible_command_timeout: 30
+    ansible_retries: 3
+    ansible_retry_delay: 5

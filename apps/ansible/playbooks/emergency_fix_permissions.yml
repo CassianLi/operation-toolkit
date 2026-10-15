@@ -1,0 +1,49 @@
+---
+# 紧急权限修复 Playbook
+# 用于修复 /etc 目录权限问题，解决用户登录异常
+
+- name: 紧急修复系统权限
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: 清除 /etc 目录的 ACL 权限
+      shell: setfacl -R -b /etc
+      ignore_errors: yes
+
+    - name: 修复 /etc 目录权限
+      file:
+        path: "/etc"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+
+    - name: 修复关键系统文件权限
+      file:
+        path: "{{ item }}"
+        owner: "root"
+        group: "root"
+        mode: "0644"
+      loop:
+        - "/etc/profile"
+        - "/etc/bashrc"
+        - "/etc/environment"
+        - "/etc/passwd"
+        - "/etc/group"
+        - "/etc/shadow"
+
+    - name: 修复 /etc 子目录权限
+      file:
+        path: "{{ item }}"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+      loop:
+        - "/etc/ssh"
+        - "/etc/sudoers.d"
+        - "/etc/yum.repos.d"
+
+    - name: 显示修复结果
+      debug:
+        msg: "系统权限修复完成，请重新登录测试"

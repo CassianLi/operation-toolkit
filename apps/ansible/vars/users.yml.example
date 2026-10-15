@@ -1,0 +1,31 @@
+---
+# 用户配置变量
+# 包含用户基本信息，不包含敏感信息
+# 复制此文件为 users.yml 并填入实际的账户信息和SSH公钥
+
+# 用户基本信息配置
+users:
+  - username: user01
+    full_name: "用户01"
+    primary_group: readonly
+    secondary_groups: ["developers"]
+    shell: /bin/bash
+    ssh_keys:
+      - "ssh-rsa YOUR_SSH_PUBLIC_KEY_HERE user01@example.com"
+      - "ssh-ed25519 YOUR_SSH_PUBLIC_KEY_HERE user01@example.com"
+
+  - username: user02
+    full_name: "用户02"
+    primary_group: readonly
+    secondary_groups: ["developers"]
+    shell: /bin/bash
+    ssh_keys:
+      - "ssh-rsa YOUR_SSH_PUBLIC_KEY_HERE user02@example.com"
+
+  - username: user03
+    full_name: "用户03"
+    primary_group: readonly
+    secondary_groups: ["developers"]
+    shell: /bin/bash
+    ssh_keys:
+      - "ssh-rsa YOUR_SSH_PUBLIC_KEY_HERE user03@example.com"
