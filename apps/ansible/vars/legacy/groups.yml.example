@@ -1,4 +1,8 @@
 # Copy to groups.yml (gitignored)
+#
+# LEGACY ONLY — 已上线机器用 setup_users.yml。
+# 新机请用 simple_users.yml + setup_users_simple.yml（无本文件、无额外运维组）。
+# 勿把本文件的 developers 属组策略套到 simple 新机。
 user_groups:
 - name: developers
   gid: 2001

@@ -1,5 +1,10 @@
 # Example inventory — replace CHANGE_ME and *.example.local with local domains from /etc/hosts or LAN DNS.
 # Do not commit real hosts.yml.
+#
+# 备忘 — 见 docs/tech/account-policy.md
+# - 已上线：不写 account_profile；勿改目录属组；偶发用 make users-legacy
+# - 新机：account_profile: simple → make users-simple LIMIT=<主机名>
+# - simple 目录 root:root，写 /opt|/data 用 sudo
 
 all:
   children:
@@ -78,6 +83,15 @@ all:
           server_name: asl-pro-vault
           server_description: 生产环境Vault服务器(备份数据库，以及其他补充服务)
           env_type: pro
+        # 新机示例（简化账户；复制后改名并填本地域名）
+        # asl-pro-newbox:
+        #   ansible_host: asl-pro-newbox.example.local
+        #   ansible_user: CHANGE_ME
+        #   ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+        #   server_name: asl-pro-newbox
+        #   server_description: 新机（simple 档）
+        #   env_type: pro
+        #   account_profile: simple
   vars:
     ansible_python_interpreter: /usr/bin/python3
     ansible_ssh_common_args: -o StrictHostKeyChecking=no

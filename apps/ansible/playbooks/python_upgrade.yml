@@ -11,7 +11,7 @@
   gather_facts: no # 临时禁用，避免Python版本兼容性问题
 
   vars_files:
-    - ../vars/system.yml
+    - ../vars/legacy/system.yml
 
   tasks:
     - name: 检查Python版本（使用raw模块， 切记不能使用--check模式测试包含raw模块的任务）

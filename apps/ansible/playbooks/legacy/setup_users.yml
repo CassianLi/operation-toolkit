@@ -1,11 +1,12 @@
 ---
-# 用户组和用户配置playbook
-# 用于在指定环境服务器上配置用户组、用户和权限
+# 用户组和用户配置 playbook（LEGACY — 已上线机器）
+#
+# 备忘：新机用 setup_users_simple.yml（account_profile=simple）。
+# 本 playbook 会维护 developers 等组与目录属组；勿对 simple 新机执行。
+#
 # 使用方法：
-# ansible-playbook playbooks/setup_users.yml -e "target_env=dev"  # 开发环境
-# ansible-playbook playbooks/setup_users.yml -e "target_env=pro"  # 生产环境
-# ansible-playbook playbooks/setup_users.yml  # 默认开发环境
-# ansible-playbook playbooks/setup_users.yml -e "target_env=dev" --limit "asl-dev-gw"  # 指定服务器
+# ansible-playbook playbooks/setup_users.yml -e "target_env=dev"
+# ansible-playbook playbooks/setup_users.yml -e "target_env=pro" --limit "asl-pro-ser"
 
 - name: 配置用户组和用户
   hosts: "{{ target_env | default('dev') }}_servers"
@@ -13,9 +14,9 @@
   gather_facts: yes
 
   vars_files:
-    - ../vars/users.yml
-    - ../vars/groups.yml
-    - ../vars/system.yml
+    - ../../vars/legacy/users.yml
+    - ../../vars/legacy/groups.yml
+    - ../../vars/legacy/system.yml
 
   pre_tasks:
     - name: 显示目标环境信息
@@ -57,14 +58,14 @@
         - python_version_result.rc != 0 or current_python_version is not defined or (current_python_version is defined and current_python_version | float < 3.8)
 
   roles:
-    - role: group_management
+    - role: legacy/group_management
       tags:
         - group_management
         - groups
         - sudo
         - all
 
-    - role: user_management
+    - role: legacy/user_management
       tags:
         - user_management
         - users

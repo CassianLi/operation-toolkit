@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  role_name: simple_app_dirs
+  description: Ensure app directories for simple account profile (root:root, no shared ops group)
+  license: MIT
+  min_ansible_version: "2.9"
+dependencies: []

@@ -1,28 +1,22 @@
 # Ansible（ASL）
 
-合并后的唯一 Ansible 工程：普通用户组/账户与 root 权限用户。
+**现状：** 各机均以 sudo 账户登录（账户名各异）；部分旧机目录曾设运维组。  
+**原则：** 已部署机器不调整；新机只用 simple。详见 [account-policy.md](../../docs/tech/account-policy.md)。
 
-## 本地准备
-
-```bash
-cp inventory/hosts.yml.example inventory/hosts.yml   # 填入本地域名与密钥路径
-cp vars/users.yml.example vars/users.yml             # 按需
-cp vars/groups.yml.example vars/groups.yml
-cp vars/root_users.yml.example vars/root_users.yml
-cp vars/ssh_keys.yml.example vars/ssh_keys.yml
-```
-
-敏感实配文件已 gitignore，勿提交。
-
-## 推荐入口
-
-在仓库根目录：
+## 新机（主路径）
 
 ```bash
-make help
-make ping TARGET_ENV=dev
-make users TARGET_ENV=dev
-make root-users TARGET_ENV=pro
+# inventory: account_profile: simple
+cp vars/simple_users.yml.example vars/simple_users.yml
+make users-simple TARGET_ENV=pro LIMIT=<主机名>
 ```
 
-详情见 [docs/tech/ansible.md](../../docs/tech/ansible.md)。
+目录：`system_simple.yml` → `root:root`；写部署目录请 **sudo**。
+
+## 旧机（归档）
+
+```bash
+make users-legacy TARGET_ENV=pro LIMIT=<主机名>   # 确有必要时
+```
+
+配置与 playbook：`vars/legacy/`、`playbooks/legacy/`。避免改旧机目录属组。

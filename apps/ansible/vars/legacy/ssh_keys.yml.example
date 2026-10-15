@@ -13,21 +13,21 @@ root_user_ssh_keys:
   # 管理员用户1的SSH密钥
   admin_user1:
     keys:
-      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... admin1@example.com"
-      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIcTGUzB2cJ6CsX4JDUm00rMSjxkrJ+lXGmpgaRPd5+y admin1@example.com"
+      - "ssh-rsa AAAA...REPLACE_ME... admin1@example.com"
+      - "ssh-ed25519 AAAA...REPLACE_ME admin1@example.com"
     description: "管理员用户1的SSH公钥"
 
   # 管理员用户2的SSH密钥
   admin_user2:
     keys:
-      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... admin2@example.com"
+      - "ssh-rsa AAAA...REPLACE_ME... admin2@example.com"
     description: "管理员用户2的SSH公钥"
 
   # Root管理员的SSH密钥
   root_admin:
     keys:
-      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... root_admin@example.com"
-      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIcTGUzB2cJ6CsX4JDUm00rMSjxkrJ+lXGmpgaRPd5+y root_admin@example.com"
+      - "ssh-rsa AAAA...REPLACE_ME... root_admin@example.com"
+      - "ssh-ed25519 AAAA...REPLACE_ME root_admin@example.com"
     description: "Root管理员的SSH公钥"
 
 # SSH密钥生成说明

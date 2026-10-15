@@ -1,5 +1,11 @@
 ---
-# 系统配置变量
+# 系统配置变量（legacy 已上线机器）
+#
+# 备忘 — 服务器权限 / 目录：
+# - 本文件供 setup_users.yml（旧机）使用：目录属组多为 developers，配合 groups.yml。
+# - 新机请用 system_simple.yml + setup_users_simple.yml（root:root，写目录靠 sudo）。
+# - 勿对已跑服务的旧机改属组或重跑会改 ACL/目录组的任务。
+# - 部署服务时：服务用户（如 nginx）由安装流程创建；登录用户若需改其目录请 sudo。
 
 # Python版本要求
 min_python_version: 38
@@ -9,9 +15,8 @@ min_python_version: 38
 #   timezone: "Asia/Shanghai"
 #   locale: "zh_CN.UTF-8"
 
-# 应用目录配置 - 仅包含应用相关的目录
-# 注意：系统原生目录（如 /var/log, /etc/*, /tmp 等）的权限配置
-# 应该在 groups.yml 中的 group_permissions 部分进行设置
+# 应用目录配置 - 仅包含应用相关的目录（legacy：共享组 developers）
+# 系统原生目录（/var/log、/etc 等）不要在此乱改
 app_directories:
   "/usr/local/src":
     owner: "root"

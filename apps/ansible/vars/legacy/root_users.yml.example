@@ -1,4 +1,5 @@
 # Copy to root_users.yml (gitignored)
+# 亦可用于个别 root 档账户。全新机器更推荐 simple_users.yml + setup_users_simple.yml。
 root_users:
 - username: admin_example
   full_name: Example Admin

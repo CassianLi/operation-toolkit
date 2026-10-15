@@ -1,0 +1,50 @@
+---
+# 新机主路径：同名主组 + 全员 NOPASSWD:ALL + 目录 root:root
+# 策略见 docs/tech/account-policy.md
+#
+# 仅 account_profile=simple；旧机勿跑。写 /opt|/data 用 sudo。
+# make users-simple TARGET_ENV=pro LIMIT=<host>
+
+- name: 简化账户与目录（新机）
+  hosts: "{{ target_env | default('dev') }}_servers"
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../vars/simple_users.yml
+    - ../vars/system_simple.yml
+
+  pre_tasks:
+    - name: 拒绝在未标记 simple 的主机上执行
+      assert:
+        that:
+          - account_profile | default('legacy') == 'simple'
+        fail_msg: >-
+          主机 {{ inventory_hostname }} 未设置 account_profile=simple。
+          请在 inventory/hosts.yml 该主机下增加 account_profile: simple；
+          旧机请改用 make users-legacy。
+        success_msg: "account_profile=simple，继续简化配置"
+
+    - name: 将 simple_users 映射为 root_user_management 所需变量
+      set_fact:
+        root_users: "{{ simple_users }}"
+
+    - name: 显示目标
+      debug:
+        msg: |
+          模式: simple（全员 sudo，无额外运维组）
+          环境: {{ target_env | default('dev') }}
+          主机: {{ inventory_hostname }}
+          用户数: {{ simple_users | length }}
+          目录策略: root:root 0755（写目录用 sudo）
+
+  roles:
+    - role: root_user_management
+      tags:
+        - users
+        - ssh_keys
+        - sudo
+    - role: simple_app_dirs
+      tags:
+        - directories
+        - permissions

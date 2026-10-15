@@ -1,0 +1,24 @@
+---
+# 新机应用目录：root:root 0755（写目录请 sudo）
+# 备忘：不创建运维共享组；服务用户（nginx 等）不在此创建。
+
+- name: 确保应用目录存在（simple 档）
+  file:
+    path: "{{ item.key }}"
+    state: directory
+    owner: "{{ item.value.owner | default('root') }}"
+    group: "{{ item.value.group | default('root') }}"
+    mode: "{{ item.value.mode | default('0755') }}"
+  loop: "{{ app_directories | dict2items }}"
+  when: app_directories is defined
+  tags:
+    - directories
+    - permissions
+
+- name: 提醒目录协作方式
+  debug:
+    msg: >-
+      simple 档目录为 root:root。多人改 /opt、/data 等请使用 sudo；
+      服务账户由部署流程自行创建，勿依赖运维共享组。
+  tags:
+    - directories

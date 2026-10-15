@@ -13,8 +13,8 @@
   gather_facts: yes
 
   vars_files:
-    - ../vars/root_users.yml
-    - ../vars/system.yml
+    - ../../vars/legacy/root_users.yml
+    - ../../vars/legacy/system.yml
 
   pre_tasks:
     - name: 显示目标环境信息

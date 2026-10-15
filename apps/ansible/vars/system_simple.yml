@@ -1,0 +1,47 @@
+---
+# 新机（account_profile=simple）应用目录 — 零额外运维组
+#
+# 备忘（目录权限 / 多人协作）：
+# - 属主均为 root:root，权限 0755：登录用户写这些目录请用 sudo。
+# - 全员已是 NOPASSWD:ALL，跨用户运维靠 sudo，不再维护 developers 等共享组。
+# - 服务账户（nginx/mysql 等）由部署脚本自行创建；与本文件无关。
+# - 已上线 legacy 机器请继续用 system.yml（developers 属组），不要对本文件跑旧机。
+# - 部署服务后若目录变成某用户私有属主，其他同事需 sudo 才能改；属预期。
+
+app_directories:
+  "/usr/local/src":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/opt":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/opt/java-apps":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/opt/python-apps":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/opt/go-apps":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/opt/docker-apps":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/data":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/backup":
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  "/mnt/static":
+    owner: "root"
+    group: "root"
+    mode: "0755"

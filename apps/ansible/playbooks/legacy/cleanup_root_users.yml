@@ -16,9 +16,9 @@
   gather_facts: yes
 
   vars_files:
-    - ../vars/root_users.yml
-    - ../vars/system.yml
-    - ../vars/cleanup_users.yml
+    - ../../vars/legacy/root_users.yml
+    - ../../vars/legacy/system.yml
+    - ../../vars/legacy/cleanup_users.yml
 
   pre_tasks:
     - name: 显示清理配置信息
@@ -55,7 +55,7 @@
         msg: |
           未指定要清理的用户！
           请使用 -e "target_users=user1,user2" 指定要清理的用户
-          或编辑 vars/cleanup_users.yml 配置文件
+          或编辑 vars/legacy/cleanup_users.yml 配置文件
       when: target_user_list is not defined or target_user_list | length == 0
 
     - name: 显示目标用户列表
@@ -88,7 +88,7 @@
       when: user_existence_check.results | selectattr('failed') | list | length > 0
 
   roles:
-    - role: root_user_cleanup
+    - role: legacy/root_user_cleanup
       tags:
         - root_user_cleanup
         - cleanup_users

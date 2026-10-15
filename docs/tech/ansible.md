@@ -1,35 +1,48 @@
 # Ansible 用法
 
-工程路径：`apps/ansible/`。
+工程：`apps/ansible/`。策略原文见 [account-policy.md](./account-policy.md)。
 
-## 环境
+## 一句话
 
-Inventory 主机组：
+- **旧机**：sudo 登录已存在，目录组可能仍是历史配置 → **不调整**；偶发维护走 `playbooks/legacy/`。
+- **新机**：`account_profile: simple` → 全员 sudo、无额外运维组、目录 `root:root`（写目录用 sudo）。
 
-- `dev_servers` — `TARGET_ENV=dev`
-- `pro_servers` — `TARGET_ENV=pro`
+## 日常命令（新机优先）
 
-Playbook 通过 `-e target_env=$TARGET_ENV` 选择组（默认 `dev`）。
+```bash
+make ping TARGET_ENV=pro LIMIT=<host>
+make users-simple TARGET_ENV=pro LIMIT=<host>   # 必带 LIMIT
+```
 
-## 常用 playbook
+准备：
 
-| Playbook | 作用 |
-|----------|------|
-| `playbooks/setup_users.yml` | 用户组 + 普通用户 + SSH/sudo |
-| `playbooks/manage_groups.yml` | 仅用户组 |
-| `playbooks/manage_users.yml` | 仅用户 |
-| `playbooks/setup_root_users.yml` | root 权限用户 |
-| `playbooks/cleanup_root_users.yml` | 清理 root 用户 / SSH 密钥 |
-| `playbooks/python_upgrade.yml` | Python 升级辅助 |
-| `playbooks/emergency_fix_permissions.yml` | 紧急权限修复 |
+1. inventory 增加主机，`account_profile: simple`，本地域名  
+2. `cp apps/ansible/vars/simple_users.yml.example apps/ansible/vars/simple_users.yml` 并填写  
 
-根目录 `make users` / `make root-users` / `make ping` 已封装上述常用操作。
+## 旧机（legacy）
 
-## 变量
+```bash
+make users-legacy TARGET_ENV=pro LIMIT=<host>
+make root-users-legacy TARGET_ENV=pro LIMIT=<host>
+```
 
-放在 `apps/ansible/vars/`。仓库只提交 `*.example` 与非敏感的 `system.yml`、`cleanup_users.yml`。
+配置在 `apps/ansible/vars/legacy/`。**默认不要对旧机跑会改目录属组的任务。**
+
+## 目录结构（精简后）
+
+```
+apps/ansible/
+  playbooks/setup_users_simple.yml   # 主路径
+  playbooks/python_upgrade.yml
+  playbooks/legacy/                  # 旧机归档
+  roles/root_user_management/        # simple 复用
+  roles/simple_app_dirs/
+  roles/legacy/                      # 旧机组/用户角色
+  vars/simple_users.yml(.example)
+  vars/system_simple.yml
+  vars/legacy/                       # 旧机变量
+```
 
 ## 安全
 
-- `ansible_host` 使用本地域名，不要写 IP。
-- 不要提交 `inventory/hosts.yml`、`vars/users.yml`、`vars/root_users.yml`、`vars/groups.yml`、`vars/ssh_keys.yml`。
+本地域名；勿提交实配 `hosts.yml` / `simple_users.yml` / `vars/legacy/*` 敏感文件。

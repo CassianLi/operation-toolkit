@@ -11,8 +11,8 @@
   gather_facts: yes
 
   vars_files:
-    - ../vars/groups.yml
-    - ../vars/system.yml
+    - ../../vars/legacy/groups.yml
+    - ../../vars/legacy/system.yml
 
   pre_tasks:
     - name: 显示目标环境信息
@@ -27,7 +27,7 @@
         msg: "group_permissions 变量: {{ group_permissions is defined }}"
 
   roles:
-    - role: group_management
+    - role: legacy/group_management
       tags:
         - group_management
         - groups

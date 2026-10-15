@@ -11,8 +11,8 @@
   gather_facts: yes
 
   vars_files:
-    - ../vars/users.yml
-    - ../vars/system.yml
+    - ../../vars/legacy/users.yml
+    - ../../vars/legacy/system.yml
 
   pre_tasks:
     - name: 显示目标环境信息
@@ -23,7 +23,7 @@
           当前服务器: {{ server_name }} ({{ ansible_host }})
 
   roles:
-    - role: user_management
+    - role: legacy/user_management
       tags:
         - user_management
         - users

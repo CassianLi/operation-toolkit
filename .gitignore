@@ -17,14 +17,15 @@ tmp/*
 
 # Ansible local inventory & sensitive vars
 **/inventory/hosts.yml
+**/vars/simple_users.yml
+**/vars/legacy/users.yml
+**/vars/legacy/root_users.yml
+**/vars/legacy/groups.yml
+**/vars/legacy/ssh_keys.yml
+**/vars/ssh_keys.yml
 **/vars/users.yml
 **/vars/root_users.yml
-**/vars/ssh_keys.yml
 **/vars/groups.yml
-
-# Legacy filename patterns (pre-migration)
-root_users.yml
-*ssh_keys.yml
 
 # DB tool local config / runtime
 **/config/database.yaml

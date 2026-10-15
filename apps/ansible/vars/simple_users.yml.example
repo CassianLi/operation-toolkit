@@ -1,0 +1,13 @@
+---
+# 新机简化账户（复制为 simple_users.yml，勿提交）
+# 每人：同名主组 + SSH + NOPASSWD:ALL（复用 root_user_management 角色）
+# 不要配置 developers/operations/readonly；旧机继续用 users.yml + groups.yml
+
+simple_users:
+  - username: admin_example
+    full_name: "Example Admin"
+    shell: /bin/bash
+    home: "/home/admin_example"
+    create_home: true
+    ssh_keys:
+      - "ssh-ed25519 AAAA...REPLACE_ME admin_example@example.local"
