@@ -4,7 +4,7 @@
 
 ### 1.1 安装Python依赖
 ```bash
-cd tools/prod-db-history-cleanup
+cd apps/tools/db-history-cleanup
 pip3 install -r requirements.txt
 ```
 

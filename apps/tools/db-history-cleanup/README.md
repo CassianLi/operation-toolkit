@@ -38,7 +38,7 @@ prod-db-history-cleanup/
 
 ### 1. 环境准备
 ```bash
-cd tools/prod-db-history-cleanup
+cd apps/tools/db-history-cleanup
 
 # 安装Python依赖
 pip3 install -r requirements.txt

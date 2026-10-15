@@ -5,7 +5,7 @@
 
 ## 文件结构
 ```
-db-tools/
+apps/tools/db-restore/
 ├── mysql-bak-db.yaml          # podman-compose主配置文件
 ├── mysql.cnf                  # MySQL配置文件
 ├── env.example                # 环境变量示例文件
