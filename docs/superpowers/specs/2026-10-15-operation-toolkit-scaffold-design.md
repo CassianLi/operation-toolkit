@@ -1,7 +1,7 @@
 # Design: operation-toolkit 脚手架与 Ansible/DB 运维整理
 
 **日期:** 2026-10-15  
-**状态:** 待用户审阅  
+**状态:** 已批准并实施（分支 `chore/scaffold-reorg`）  
 **范围:** 仓库脚手架规范化、Ansible 工程合并、DB 三年周期工具整理与防遗忘提醒
 
 ## 1. 背景与目标
