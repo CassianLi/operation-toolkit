@@ -10,16 +10,22 @@ ASL 服务器运维工具箱：Ansible 账户管理 + 周期数据库备份恢�
 | `docs/tech/` | Ansible、DB 恢复、运维日历 |
 | `docs/agent/` | Agent 约束 |
 | `tmp/` | 本地缓存（不入库真实内容） |
-| `apps/ansible/` | Ansible 工程 |
-| `apps/tools/` | DB 相关工具 |
+| `apps/ansible/` | 合并后的 Ansible 工程 |
+| `apps/tools/db-restore/` | 约三年一次的备份恢复 |
+| `apps/tools/db-history-cleanup/` | 生产库历史清理 |
 
 ## 常用命令
 
 ```bash
 make help
+make ping ENV=dev
+make users ENV=dev
+make root-users ENV=pro
+make db-remind
+make db-restore-docs
 ```
 
-完整命令表见 Makefile（Task 完成后以 `make help` 为准）。
+首次使用 Ansible：复制 `apps/ansible/inventory/hosts.yml.example` → `hosts.yml`，以及所需 `vars/*.example` → 实配文件（均已 gitignore）。
 
 ## 安全
 
